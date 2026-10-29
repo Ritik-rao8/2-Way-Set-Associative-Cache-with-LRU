@@ -141,3 +141,11 @@ Set absolute Open Graph URLs once a public deployment URL is assigned.
 was studied as a reference. This project's cache interface, write policy,
 implementation, tests, and measured results were developed separately.
 The reference repository is not included here.
+
+
+## Vercel hosting
+
+Import the repository with Root Directory set to the repository root (`./`).
+The included vercel.json skips builds, serves the repository's static files,
+and redirects `/` to `/web/`. This preserves relative asset paths and links
+into results/ and rtl/. Do not select web/ as the project root.
