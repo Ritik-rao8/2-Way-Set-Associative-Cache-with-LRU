@@ -1,0 +1,23 @@
+# Local assignment and planning notes
+/info.md
+/project.md
+/milestone.md
+/milestones.md
+
+# OS/editor files and local settings
+.DS_Store
+.vscode/
+.idea/
+.env
+.env.*
+__pycache__/
+*.pyc
+node_modules/
+
+# Reproducible simulator/synthesis output and scratch logs
+/results/*.vvp
+/results/netlist_*.v
+/results/*.log
+/results/*.png
+
+# Keep the source, compact measured CSV/JSON results, and demo VCDs.

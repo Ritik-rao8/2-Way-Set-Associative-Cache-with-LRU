@@ -1,0 +1,2 @@
+ways,latency,requests,hits,misses,hit_rate_percent,total_service_cycles,average_cycles
+1,3,196,127,69,64.796,1077,5.495

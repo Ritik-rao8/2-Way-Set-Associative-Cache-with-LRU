@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#101311">
+  <meta name="description" content="I built two caches in Verilog. Same 64 bytes. Different places to put them. Step through the experiment.">
+  <meta property="og:title" content="Cache Explorer — same address, different outcome">
+  <meta property="og:description" content="A hands-on silicon lab: direct-mapped vs two-way LRU. Built in Verilog. Checked, byte for byte.">
+  <meta property="og:type" content="website">
+  <meta property="og:image" content="social-preview.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <title>Cache Explorer — a small silicon experiment</title>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="preload" href="fonts/space-grotesk-400.ttf" as="font" type="font/ttf" crossorigin>
+  <link rel="stylesheet" href="style.css">
+  <script defer src="data.js"></script>
+  <script defer src="script.js"></script>
+</head>
+<body>
+<a class="skip" href="#bench">Skip to the simulator</a>
+<header class="masthead">
+  <a href="#" class="wordmark"><svg viewBox="0 0 32 32" aria-hidden="true"><path d="M4 4h10v10H4zM18 4h10v10H18zM4 18h10v10H4zM18 18h10v10H18z"/></svg>Cache Explorer</a>
+  <nav aria-label="Main navigation"><a href="#bench">The bench</a><a href="#evidence">The evidence</a><a href="#inside">Inside the chip</a></nav>
+  <span class="mast-note">A computer architecture experiment</span>
+</header>
+<main>
+<section class="hero" aria-labelledby="hero-title">
+  <div class="hero-copy"><p class="lab-note">Same 64 bytes. Different places to put them.</p>
+    <h1 id="hero-title">One address.<br>Two caches.<br><em>Different fate.</em></h1>
+    <p class="hero-intro">I built two caches in Verilog.<br>One keeps throwing things away.<br>The other remembers. Usually.</p>
+    <a class="enter" href="#bench">Put them to the test <span aria-hidden="true">↓</span></a>
+  </div>
+  <div class="hero-silicon" aria-label="Live alternating-address preview">
+    <div class="ambient-source"><span>READ</span><strong id="ambient-address">0x0000</strong><button id="ambient-toggle" aria-label="Pause ambient demonstration">Ⅱ</button></div>
+    <svg class="ambient-wires" viewBox="0 0 600 90" aria-hidden="true"><path d="M300 0V35H150V90M300 35H450V90"/></svg>
+    <div class="ambient-pair"><div><div class="chip-name">Direct-mapped <span id="ambient-direct-status">MISS</span></div><div id="ambient-direct" class="ambient-grid"></div><p>One slot. Two competing blocks.</p></div><div><div class="chip-name">Two-way LRU <span id="ambient-two-status">MISS</span></div><div id="ambient-two" class="ambient-grid two"></div><p>Room for both.</p></div></div>
+    <div class="die-caption"><span>16 lines / 8 sets × 2 ways</span><span>4 bytes per block</span></div>
+  </div>
+  <div class="hero-bottom"><span>Write-through · write-allocate</span><span>Behavioral model, checked against my RTL.</span></div>
+</section>
+<section class="bench-section" id="bench" aria-labelledby="bench-title">
+ <div class="bench-pin">
+  <div class="bench-heading"><div><p class="lab-note">Your turn.</p><h2 id="bench-title">Make a little trouble.</h2></div><p>Try the third access.<br>That’s where the two caches disagree.</p></div>
+  <div class="pattern-list" id="patterns" role="group" aria-label="Access patterns"></div>
+  <div class="transport"><div class="transport-buttons"><button id="reset" title="Reset trace">↺<span class="sr-only">Reset trace</span></button><button id="back" title="Previous access (left arrow)">←<span class="sr-only">Previous access</span></button><button id="play">Play <span aria-hidden="true">▷</span></button><button id="step" class="step-button">Step <span aria-hidden="true">→</span></button></div><div class="now"><span id="request-label">Ready to read</span><strong id="request-address">0x0000</strong></div><label class="speed-label">Clock<select id="speed"><option value="170">Slow</option><option value="70" selected>Normal</option><option value="25">Fast</option></select></label><span id="progress" class="mono">0 / 16</span></div>
+  <div class="timeline-area"><div id="timeline" class="timeline" aria-label="Trace timeline"></div><label class="scrub-label"><span class="sr-only">Completed accesses</span><input id="scrub" type="range" min="0" max="16" value="0" step="1" aria-label="Completed accesses"></label><div class="timeline-caption"><span id="pattern-note"></span><span>← → step · space play · drag to rewind</span></div></div>
+  <div class="mobile-switch" role="group" aria-label="Mobile cache view"><button data-view="0" aria-pressed="true">Direct-mapped</button><button data-view="1" aria-pressed="false">Two-way LRU</button></div>
+  <div class="machines" id="machines"></div>
+  <div class="bench-caption"><p id="narration" aria-live="polite">Both caches are empty. Send the first address.</p><span id="run-state" class="mono">IDLE</span></div>
+  <details id="builder" class="drawer"><summary>Build your own trace <span>16 bits. You’re in control.</span></summary>
+   <div class="builder-layout"><div><div class="bit-labels"><span>Bit 15</span><span>Bit 0</span></div><div id="bit-flipper" class="bit-flipper" role="group" aria-label="Address bits"></div><form id="custom-form"><label>Hex address<input id="address" value="0040" maxlength="6" spellcheck="false" autocomplete="off"></label><label>Operation<select id="operation"><option value="0">Read</option><option value="1">Write</option></select></label><label>Write byte<input id="byte" value="2A" maxlength="4" disabled spellcheck="false"></label><button type="submit">Add to trace +</button></form><p id="form-error" role="alert"></p><div class="custom-actions"><button id="new-trace">Start empty</button><span id="custom-count">No custom accesses yet.</span><button id="run-custom">Run my trace →</button></div></div><div id="mapping" class="mapping"></div></div>
+  </details>
+  <details class="drawer" id="hood"><summary>Under the hood <span>Bits, bytes, and the controller path.</span></summary><div id="hood-content"></div></details>
+ </div>
+</section>
+<section class="evidence" id="evidence" aria-labelledby="evidence-title">
+ <div class="evidence-intro"><p class="lab-note">I checked the numbers.</p><h2 id="evidence-title">Measured<br>in Verilog.</h2><p>No bigger cache hiding on one side. Same capacity, same block size, same write policy. I start both empty.</p><div class="evidence-actions"><button id="table-toggle" aria-expanded="false">View as table</button><a href="../results/comparison.csv" download>Download CSV ↓</a></div></div>
+ <div class="evidence-data"><div class="chart-heading"><span>Hit rate / hover to replay · click to inspect</span><div class="chart-key"><span>━ Direct</span><span>┄ Two-way</span></div></div><div id="comparison"></div><div id="evidence-preview" aria-live="polite"></div><div id="data-table" class="data-table" hidden></div></div>
+ <div class="plot-twist"><span class="twist-mark" aria-hidden="true">≠</span><div><h3>More ways.<br>Not always more hits.</h3><p>Three blocks walk into one two-way set. Only two fit. Direct mapping puts one elsewhere—and wins <strong>29.167% to 0.000%</strong>. My mixed trace favors direct mapping too: <strong>64.796% to 60.714%</strong>.</p><button id="twist-replay">Replay the counterexample ↗</button></div></div>
+ <div class="silicon-cost"><div><p class="lab-note">Remembering has a cost.</p><h3>A little more silicon.</h3><p>Generic synthesis cells. Not FPGA LUTs.<br>No physical timing claim.</p></div><div class="cost-drawing"><div class="cost-chip direct-cost"><span>Direct</span><strong>1,782</strong></div><div class="cost-chip two-cost"><span>Two-way</span><strong>1,996</strong></div><span class="cost-delta">+12.0%<br><small>generic cells</small></span></div></div>
+</section>
+<section class="walkthrough" id="inside" aria-labelledby="inside-title">
+ <div class="walk-sticky"><p class="lab-note">Follow 0x0043 through the chip.</p><h2 id="inside-title">It’s just<br>four decisions.</h2><div id="walk-diagram" class="walk-diagram" aria-hidden="true"><div class="walk-address">00000000010 <b>000</b> <em>11</em></div><div class="walk-route"></div><div class="walk-set"><span>SET 0</span><div>WAY 0 <strong>TAG 000</strong></div><div class="walk-match">WAY 1 <strong>TAG 002</strong></div></div><div class="walk-bytes"><span>40</span><span>41</span><span>42</span><span>43</span></div><div class="walk-lru">WAY 0 IS OLDER ←</div><div id="walk-status">Index bits 000 select set 0.</div></div></div>
+ <div class="walk-steps"><article data-stage="0"><span class="walk-symbol">↳</span><h3>Find the set.</h3><p>I use three index bits to pick one of eight sets. Address 0043 points to set 0. I don’t search the whole cache.</p></article><article data-stage="1"><span class="walk-symbol">=</span><h3>Check the tag.</h3><p>I compare both ways at once. A valid block with tag 002 is a match. An empty slot can never hit.</p></article><article data-stage="2"><span class="walk-symbol">[3]</span><h3>Pick the byte.</h3><p>The last two bits are 11: byte offset 3. I take the fourth byte, 43, from the block. The other bytes stay put.</p></article><article data-stage="3"><span class="walk-symbol">↔</span><h3>Remember what<br>was used.</h3><p>I just used way 1. Way 0 is older now. If the next miss needs space, I replace the older way—unless a slot is still empty.</p></article></div>
+</section>
+</main>
+<footer id="artifacts"><div class="footer-title"><p class="lab-note">From my lab notebook.</p><h2>Don’t take<br>the animation’s word.</h2></div><div class="attachments"><a href="../report.md"><span>Technical report</span><small>MD</small><b>↗</b></a><a href="../results/review.md"><span>Verification record</span><small>MD</small><b>↗</b></a><a href="../results/2way_demo.vcd" download><span>Two-way waveform</span><small>VCD</small><b>↓</b></a><a href="../rtl/cache_2way.v" download><span>Two-way Verilog</span><small>RTL</small><b>↓</b></a><a href="../rtl/cache_direct.v" download><span>Direct-mapped Verilog</span><small>RTL</small><b>↓</b></a></div><div class="footer-bottom"><span>Cache Explorer / MCA project</span><p>This is a behavioral simulation checked against my RTL. It does not execute Verilog live. Memory delay: 3 cycles. Write-through + write-allocate.</p><a href="#">Back to the bench ↑</a></div><p id="self-test-warning" role="alert" hidden></p></footer>
+</body>
+</html>
