@@ -1,0 +1,12 @@
+.DS_Store
+.vscode/
+.idea/
+.env
+.env.*
+__pycache__/
+*.pyc
+node_modules/
+
+/build/
+docs/phase-i-video-script.md 
+docs/phase-i-visuals/
