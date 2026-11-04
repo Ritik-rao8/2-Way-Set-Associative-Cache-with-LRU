@@ -26,6 +26,7 @@ module cache_direct (
     wire [3:0] line_index = saved_addr[5:2];
     wire [9:0] request_tag = saved_addr[15:6];
     wire [1:0] byte_offset = saved_addr[1:0];
+    wire hit = valid[line_index] && tag[line_index] == cpu_addr[15:6];
 
     assign cpu_busy = state != IDLE;
     assign mem_req = state == REFILL_REQUEST || state == WRITE_REQUEST;
@@ -52,6 +53,24 @@ module cache_direct (
                         saved_wdata <= cpu_wdata;
                         saved_write <= cpu_write;
                         state <= LOOKUP;
+                    end
+                end
+                LOOKUP: begin
+                    // Record the original lookup once; a refill is still a miss.
+                    cpu_hit <= hit;
+                    if (hit) begin
+                        cpu_rdata <= data[line_index][byte_offset*8 +: 8];
+                        state <= RESPONSE;
+                    end else state <= REFILL_REQUEST;
+                end
+                REFILL_REQUEST: state <= REFILL_WAIT;
+                REFILL_WAIT: begin
+                    if (mem_done) begin
+                        tag[line_index] <= request_tag;
+                        valid[line_index] <= 1;
+                        data[line_index] <= mem_rdata;
+                        cpu_rdata <= mem_rdata[byte_offset*8 +: 8];
+                        state <= RESPONSE;
                     end
                 end
                 RESPONSE: begin
