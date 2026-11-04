@@ -23,7 +23,15 @@ module cache_direct (
     reg saved_write;
     integer i;
 
+    wire [3:0] line_index = saved_addr[5:2];
+    wire [9:0] request_tag = saved_addr[15:6];
+    wire [1:0] byte_offset = saved_addr[1:0];
+
     assign cpu_busy = state != IDLE;
+    assign mem_req = state == REFILL_REQUEST || state == WRITE_REQUEST;
+    assign mem_write = state == WRITE_REQUEST;
+    assign mem_addr = mem_write ? saved_addr : {saved_addr[15:2], 2'b00};
+    assign mem_wdata = saved_wdata;
 
     always @(posedge clk) begin
         if (reset) begin
