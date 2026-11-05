@@ -30,6 +30,12 @@ module cache_2way (
     wire [2:0] set_index = saved_addr[4:2];
     wire [10:0] request_tag = saved_addr[15:5];
     wire [1:0] byte_offset = saved_addr[1:0];
+    // Both comparisons happen in parallel.
+    wire hit0 = valid0[set_index] && tag0[set_index] == request_tag;
+    wire hit1 = valid1[set_index] && tag1[set_index] == request_tag;
+    wire hit = hit0 || hit1;
+    wire hit_way = !hit0 && hit1;
+    wire [31:0] hit_block = hit_way ? data1[set_index] : data0[set_index];
 
     assign cpu_busy = state != IDLE;
     assign mem_req = state == REFILL_REQUEST || state == WRITE_REQUEST;
@@ -77,6 +83,25 @@ module cache_2way (
                         state <= LOOKUP;
                     end
                 end
+                LOOKUP: begin
+                    cpu_hit <= hit;
+                    if (hit) begin
+                        if (saved_write) begin
+                            if (hit_way)
+                                data1[set_index] <= replace_byte(data1[set_index], byte_offset, saved_wdata);
+                            else
+                                data0[set_index] <= replace_byte(data0[set_index], byte_offset, saved_wdata);
+                            state <= WRITE_REQUEST;
+                        end else begin
+                            cpu_rdata <= hit_block[byte_offset*8 +: 8];
+                            state <= RESPONSE;
+                        end
+                    end else begin
+                        state <= REFILL_REQUEST;
+                    end
+                end
+                WRITE_REQUEST: state <= WRITE_WAIT;
+                WRITE_WAIT: if (mem_done) state <= RESPONSE;
                 RESPONSE: begin
                     cpu_done <= 1;
                     state <= IDLE;
