@@ -17,6 +17,7 @@ module cache_2way (
     reg [10:0] tag1 [0:7];
     reg valid0 [0:7];
     reg valid1 [0:7];
+    reg next_victim [0:7]; // In a full set, this is the least recently used way.
 
     localparam IDLE=0, LOOKUP=1, REFILL_REQUEST=2, REFILL_WAIT=3,
                WRITE_REQUEST=4, WRITE_WAIT=5, RESPONSE=6;
@@ -24,7 +25,7 @@ module cache_2way (
     reg [15:0] saved_addr;
     reg [7:0] saved_wdata;
     reg saved_write;
-    reg fill_way;
+    reg fill_way; // Remember the selected victim while memory is responding.
     integer i;
 
     wire [2:0] set_index = saved_addr[4:2];
@@ -71,6 +72,7 @@ module cache_2way (
             for (i=0; i<8; i=i+1) begin
                 valid0[i] <= 0;
                 valid1[i] <= 0;
+                next_victim[i] <= 0;
             end
         end else begin
             cpu_done <= 0;
@@ -86,6 +88,8 @@ module cache_2way (
                 LOOKUP: begin
                     cpu_hit <= hit;
                     if (hit) begin
+                        // Using either way makes the other way older.
+                        next_victim[set_index] <= !hit_way;
                         if (saved_write) begin
                             if (hit_way)
                                 data1[set_index] <= replace_byte(data1[set_index], byte_offset, saved_wdata);
@@ -93,6 +97,7 @@ module cache_2way (
                                 data0[set_index] <= replace_byte(data0[set_index], byte_offset, saved_wdata);
                             state <= WRITE_REQUEST;
                         end else begin
+                            // +: takes eight bits, starting at the selected byte.
                             cpu_rdata <= hit_block[byte_offset*8 +: 8];
                             state <= RESPONSE;
                         end
