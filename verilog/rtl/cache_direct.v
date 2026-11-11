@@ -34,6 +34,22 @@ module cache_direct (
     assign mem_addr = mem_write ? saved_addr : {saved_addr[15:2], 2'b00};
     assign mem_wdata = saved_wdata;
 
+    // Replace one byte while keeping the other three unchanged.
+    function [31:0] replace_byte;
+        input [31:0] block_data;
+        input [1:0] offset;
+        input [7:0] new_byte;
+        begin
+            replace_byte = block_data;
+            case (offset)
+                0: replace_byte[7:0] = new_byte;
+                1: replace_byte[15:8] = new_byte;
+                2: replace_byte[23:16] = new_byte;
+                3: replace_byte[31:24] = new_byte;
+            endcase
+        end
+    endfunction
+
     always @(posedge clk) begin
         if (reset) begin
             state <= IDLE;
@@ -59,8 +75,14 @@ module cache_direct (
                     // Record the original lookup once; a refill is still a miss.
                     cpu_hit <= hit;
                     if (hit) begin
-                        cpu_rdata <= data[line_index][byte_offset*8 +: 8];
-                        state <= RESPONSE;
+                        if (saved_write) begin
+                            data[line_index] <= replace_byte(data[line_index], byte_offset, saved_wdata);
+                            state <= WRITE_REQUEST;
+                        end else begin
+                            // +: selects eight consecutive bits starting at offset*8.
+                            cpu_rdata <= data[line_index][byte_offset*8 +: 8];
+                            state <= RESPONSE;
+                        end
                     end else state <= REFILL_REQUEST;
                 end
                 REFILL_REQUEST: state <= REFILL_WAIT;
@@ -68,11 +90,18 @@ module cache_direct (
                     if (mem_done) begin
                         tag[line_index] <= request_tag;
                         valid[line_index] <= 1;
-                        data[line_index] <= mem_rdata;
-                        cpu_rdata <= mem_rdata[byte_offset*8 +: 8];
-                        state <= RESPONSE;
+                        if (saved_write) begin
+                            data[line_index] <= replace_byte(mem_rdata, byte_offset, saved_wdata);
+                            state <= WRITE_REQUEST;
+                        end else begin
+                            data[line_index] <= mem_rdata;
+                            cpu_rdata <= mem_rdata[byte_offset*8 +: 8];
+                            state <= RESPONSE;
+                        end
                     end
                 end
+                WRITE_REQUEST: state <= WRITE_WAIT;
+                WRITE_WAIT: if (mem_done) state <= RESPONSE;
                 RESPONSE: begin
                     cpu_done <= 1;
                     state <= IDLE;
