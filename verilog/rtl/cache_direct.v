@@ -26,7 +26,7 @@ module cache_direct (
     wire [3:0] line_index = saved_addr[5:2];
     wire [9:0] request_tag = saved_addr[15:6];
     wire [1:0] byte_offset = saved_addr[1:0];
-    wire hit = valid[line_index] && tag[line_index] == cpu_addr[15:6];
+    wire hit = valid[line_index] && tag[line_index] == request_tag;
 
     assign cpu_busy = state != IDLE;
     assign mem_req = state == REFILL_REQUEST || state == WRITE_REQUEST;
