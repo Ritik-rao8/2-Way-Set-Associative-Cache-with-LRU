@@ -59,6 +59,10 @@ module cache_2way (
         end
     endfunction
 
+    // On a write miss, merge the CPU byte into the block we just fetched.
+    wire [31:0] filled_block = saved_write
+        ? replace_byte(mem_rdata, byte_offset, saved_wdata) : mem_rdata;
+
     always @(posedge clk) begin
         if (reset) begin
             state <= IDLE;
@@ -102,7 +106,31 @@ module cache_2way (
                             state <= RESPONSE;
                         end
                     end else begin
+                        // Empty space takes priority over replacing valid data.
+                        if (!valid0[set_index]) fill_way <= 0;
+                        else if (!valid1[set_index]) fill_way <= 1;
+                        else fill_way <= next_victim[set_index];
                         state <= REFILL_REQUEST;
+                    end
+                end
+                REFILL_REQUEST: state <= REFILL_WAIT;
+                REFILL_WAIT: begin
+                    if (mem_done) begin
+                        if (fill_way == 0) begin
+                            tag0[set_index] <= request_tag;
+                            valid0[set_index] <= 1;
+                            data0[set_index] <= filled_block;
+                        end else begin
+                            tag1[set_index] <= request_tag;
+                            valid1[set_index] <= 1;
+                            data1[set_index] <= filled_block;
+                        end
+                        next_victim[set_index] <= !fill_way;
+                        if (saved_write) state <= WRITE_REQUEST;
+                        else begin
+                            cpu_rdata <= mem_rdata[byte_offset*8 +: 8];
+                            state <= RESPONSE;
+                        end
                     end
                 end
                 WRITE_REQUEST: state <= WRITE_WAIT;
