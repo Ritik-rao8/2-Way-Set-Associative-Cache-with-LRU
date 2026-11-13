@@ -88,9 +88,86 @@ module cache_tb;
         end
     endtask
 
+    task access;
+        input write_request;
+        input [15:0] addr;
+        input [7:0] data_in;
+        input expected_hit; // Explicit expectation, or x to use only the model.
+        integer block_number, set_number, slot, found, victim;
+        integer cycles, old_reads, old_writes;
+        reg predicted_hit;
+        begin
+            block_number=addr/4;
+            set_number=block_number%SETS;
+            found=-1;
+            victim=set_number*WAYS;
+            // Timestamp-based replacement, deliberately different from hardware LRU.
+            for (slot=set_number*WAYS; slot<(set_number+1)*WAYS; slot=slot+1) begin
+                if (model_block[slot]==block_number) found=slot;
+                if (last_used[slot]<last_used[victim]) victim=slot;
+            end
+            predicted_hit=(found!=-1);
+            if ((expected_hit !== 1'bx) && predicted_hit !== expected_hit)
+                fail("directed test expectation disagrees with reference model");
+            old_reads=ram.reads;
+            old_writes=ram.writes;
+            @(negedge clk);
+            if (cpu_busy !== 0) fail("cache not idle before request");
+            cpu_req=1; cpu_write=write_request; cpu_addr=addr; cpu_wdata=data_in;
+            @(posedge clk); #1;
+            if (cpu_busy !== 1 || cpu_done !== 0) fail("request was not accepted cleanly");
+            @(negedge clk);
+            // Change all inputs after acceptance: the cache must use its saved values.
+            cpu_req=0; cpu_addr=16'hdead; cpu_wdata=8'hac; cpu_write=~write_request;
+            cycles=0;
+            while (cpu_done !== 1) begin
+                @(posedge clk); #1;
+                cycles=cycles+1;
+                if (cycles>200) fail("request timed out");
+                if (cpu_done !== 1 && cpu_busy !== 1) fail("busy dropped before completion");
+                if (mem_req === 1'b1 && mem_write === 1'b0 && mem_addr !== {addr[15:2], 2'b00})
+                    fail("block fetch used the wrong aligned address");
+                if (mem_req === 1'b1 && mem_write === 1'b1 &&
+                    (mem_addr !== addr || mem_wdata !== data_in))
+                    fail("write-through used the wrong byte address or data");
+            end
+            if (cpu_busy !== 0) fail("busy still high at completion");
+            if (cpu_hit !== predicted_hit) fail("wrong hit/miss result");
+            if (!write_request && cpu_rdata !== expected[addr]) begin
+                $display("address=%h expected=%h actual=%h",addr,expected[addr],cpu_rdata);
+                fail("read data mismatch");
+            end
+            if (write_request) expected[addr]=data_in;
+            if (ram.bytes[addr] !== expected[addr]) fail("write-through memory mismatch");
+            tested=tested+1;
+            requests=requests+1;
+            if (predicted_hit) begin
+                hits=hits+1;
+                victim=found;
+            end
+            model_block[victim]=block_number;
+            last_used[victim]=requests;
+            total_cycles=total_cycles+cycles;
+        end
+    endtask
+
     initial begin
         fresh_start;
-        $display("Testbench initialized: WAYS=%0d SETS=%0d LATENCY=%0d", WAYS, SETS, LATENCY);
+        // Baseline checks: a complete block, write hit, write miss, replacement.
+        access(0,16'h0000,0,0);
+        for (i=0;i<4;i=i+1) access(0,i,0,1);
+        for (i=0;i<4;i=i+1) begin
+            access(1,i,8'ha0+i,1);
+            for (j=0;j<4;j=j+1) access(0,j,0,1);
+        end
+        access(1,16'h0042,8'hef,0);
+        access(0,16'h0042,0,1);
+        access(0,16'h0000,0,WAYS==2);
+        access(0,16'hffff,0,0);
+        access(1,16'hfffe,8'h77,1);
+        access(0,16'hfffe,0,1);
+        check_memory;
+        $display("PASS baseline read/write verification");
         $finish;
     end
 endmodule
