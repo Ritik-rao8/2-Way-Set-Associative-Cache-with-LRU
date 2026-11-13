@@ -164,26 +164,170 @@ module cache_tb;
 
     initial begin
         csv_file=0; event_file=0;
-        demo=0;
+        demo=$test$plusargs("demo");
         stage=2;
         scan=$value$plusargs("stage=%d",stage);
-        fresh_start;
-        // Baseline checks with exact service-cycle and memory transaction checks.
-        access(0,16'h0000,0,0);
-        for (i=0;i<4;i=i+1) access(0,i,0,1);
-        for (i=0;i<4;i=i+1) begin
-            access(1,i,8'ha0+i,1);
-            for (j=0;j<4;j=j+1) access(0,j,0,1);
+        if ($value$plusargs("wave=%s",wave_path)) begin
+            $dumpfile(wave_path);
+            // Avoid dumping the 64K-byte memory; interface and cache state suffice.
+            $dumpvars(1,cache_tb);
+            $dumpvars(1,dut);
         end
-        access(1,16'h0042,8'hef,0);
-        access(0,16'h0042,0,1);
-        access(0,16'h0000,0,WAYS==2);
-        access(0,16'hffff,0,0);
-        access(1,16'hfffe,8'h77,1);
-        access(0,16'hfffe,0,1);
+        fresh_start;
+        if (demo) begin
+            $display("Read  Address  Hit?  Byte  Cycles");
+            access(0,16'h0000,0,0);       // A fills the first slot.
+            access(0,16'h0040,0,0);       // B fills the second slot in two-way.
+            access(0,16'h0000,0,WAYS==2); // A is now most recent in two-way.
+            access(0,16'h0080,0,0);       // C evicts B in two-way.
+            access(0,16'h0000,0,WAYS==2); // A stayed in two-way.
+            access(0,16'h0040,0,0);       // B was evicted from two-way.
+        end else if ($value$plusargs("trace=%s",trace_path)) begin
+            if (!$value$plusargs("csv=%s",csv_path)) fail("missing CSV path");
+            csv_file=$fopen(csv_path,"w");
+            if (!csv_file) fail("cannot open CSV output");
+            if ($value$plusargs("events=%s",event_path)) begin
+                event_file=$fopen(event_path,"w");
+                if (!event_file) fail("cannot open event output");
+                $fdisplay(event_file,"request,write,address_hex,input_hex,hit,result_hex,cycles");
+            end
+            trace_file=$fopen(trace_path,"r");
+            if (!trace_file) fail("cannot open trace");
+            while (!$feof(trace_file)) begin
+                scan=$fscanf(trace_file,"%d %h %h\n",op,address,value);
+                if (scan==3) begin
+                    if (op<0 || op>1 || address<0 || address>65535 || value<0 || value>255)
+                        fail("out-of-range trace field");
+                    access(op==1,address[15:0],value[7:0],1'bx);
+                end else if (!$feof(trace_file)) fail("malformed trace");
+            end
+            $fclose(trace_file);
+            if (requests==0) fail("empty trace");
+            $fdisplay(csv_file,"ways,latency,requests,hits,misses,hit_rate_percent,total_service_cycles,average_cycles");
+            $fdisplay(csv_file,"%0d,%0d,%0d,%0d,%0d,%.3f,%0d,%.3f",WAYS,LATENCY,requests,hits,requests-hits,100.0*hits/requests,total_cycles,1.0*total_cycles/requests);
+            $fclose(csv_file);
+            if (event_file) $fclose(event_file);
+        end else begin
+            // Baseline checks: a complete block, write hit, write miss, replacement.
+            access(0,16'h0000,0,0);
+            for (i=0;i<4;i=i+1) access(0,i,0,1);
+            for (i=0;i<4;i=i+1) begin
+                access(1,i,8'ha0+i,1);
+                for (j=0;j<4;j=j+1) access(0,j,0,1);
+            end
+            access(1,16'h0042,8'hef,0);
+            access(0,16'h0042,0,1);
+            access(0,16'h0000,0,WAYS==2);
+            access(0,16'hffff,0,0);
+            access(1,16'hfffe,8'h77,1);
+            access(0,16'hfffe,0,1);
+
+            if (stage>=3) begin
+                fresh_start;
+                access(0,16'h0000,0,0); // A fills way 0.
+                access(0,16'h0040,0,0); // B fills empty way 1.
+                access(0,16'h0000,0,WAYS==2); // A is now most recent.
+                access(0,16'h0080,0,0); // C replaces B, not A.
+                access(0,16'h0000,0,WAYS==2);
+                access(0,16'h0080,0,WAYS==2);
+                access(0,16'h0040,0,0); // B really was evicted.
+                // Writes must update recency too, in either way.
+                access(1,16'h0080,8'h55,WAYS==2);
+                access(0,16'h00c0,0,0);
+                access(0,16'h0080,0,WAYS==2);
+                access(0,16'h0040,0,0);
+            end
+            if (stage>=4) begin
+                fresh_start;
+                // Every set: fill both ways, write every byte, check all neighbors.
+                for (i=0;i<8;i=i+1) begin
+                    access(0,i*4,0,0);
+                    access(0,16'h0040+i*4,0,0);
+                    for (j=0;j<4;j=j+1) begin
+                        access(1,16'h0040+i*4+j,8'h80+i*4+j,1);
+                        access(0,16'h0040+i*4,0,1);
+                        access(0,16'h0041+i*4,0,1);
+                        access(0,16'h0042+i*4,0,1);
+                        access(0,16'h0043+i*4,0,1);
+                    end
+                    access(0,i*4,0,WAYS==2);
+                end
+                // Cache-only reset invalidates entries but must preserve memory.
+                check_memory;
+                @(negedge clk); reset=1;
+                repeat (2) @(negedge clk);
+                reset=0;
+                clear_model;
+                access(0,16'h0040,0,0);
+                access(0,16'h0040,0,1);
+                $display("PASS all sets, byte writes, neighbor preservation, cache-only reset");
+
+                fresh_start;
+                // Separate write misses at every possible byte offset.
+                for (i=0;i<4;i=i+1) begin
+                    access(1,16'h1000+i*64+i,8'hd0+i,0);
+                    for (j=0;j<4;j=j+1) access(0,16'h1000+i*64+j,0,1);
+                end
+                // Highest block and lowest block: no wraparound/corruption.
+                for (i=0;i<4;i=i+1) access(1,16'hfffc+i,8'hf0+i,1'bx);
+                for (i=0;i<4;i=i+1) access(0,16'hfffc+i,0,1);
+                for (i=0;i<4;i=i+1) access(0,i,0,1'bx);
+                $display("PASS write-miss offsets and address boundaries");
+
+                fresh_start;
+                // Fixed xorshift seed: repeatable across tools and cache types.
+                random_state=32'h13579bdf;
+                for (i=0;i<2000;i=i+1) begin
+                    random_state=random_state ^ (random_state << 13);
+                    random_state=random_state ^ (random_state >> 17);
+                    random_state=random_state ^ (random_state << 5);
+                    // Alternate a small hot region with the full address space.
+                    if (i%2==0) address=random_state[7:0];
+                    else address=random_state[15:0];
+                    access(random_state[16],address,random_state[31:24],1'bx);
+                    if (random_state[16]) access(0,address,0,1);
+                end
+                $display("PASS deterministic mixed traffic and immediate readbacks");
+
+                // Joint reset cancels an outstanding read miss safely.
+                check_memory;
+                @(negedge clk);
+                reset=1; memory_reset=1;
+                repeat (2) @(negedge clk);
+                reset=0; memory_reset=0;
+                cpu_req=1; cpu_write=0; cpu_addr=16'h1234;
+                @(negedge clk); cpu_req=0;
+                wait (mem_req===1);
+                @(posedge clk); #1; // Memory accepts the refill request.
+                @(negedge clk);
+                reset=1; memory_reset=1;
+                repeat (2) @(negedge clk);
+                reset=0; memory_reset=0;
+                clear_model;
+                for (j=0;j<65536;j=j+1) expected[j]=(j ^ (j >> 8)) & 255;
+                repeat (LATENCY+3) @(negedge clk);
+                if (cpu_done !== 0 || cpu_busy !== 0 || mem_req !== 0)
+                    fail("stale completion after joint reset");
+                access(0,16'h1234,0,0);
+                access(0,16'h1234,0,1);
+                $display("PASS reset during an outstanding refill");
+            end
+        end
+        // Check all memory, not just the last accessed byte.
         check_memory;
-        $display("TOTAL VERIFIED REQUESTS: %0d",tested);
-        $display("PASS ways=%0d latency=%0d cycles=%0d",WAYS,LATENCY,total_cycles);
+        repeat (3) @(negedge clk);
+        if (cpu_done !== 0 || cpu_busy !== 0 || mem_req !== 0)
+            fail("interface did not return to idle");
+        if (demo)
+            $display("Total: %0d hits, %0d misses, %0d service cycles", hits, requests-hits, total_cycles);
+        else begin
+            $display("TOTAL VERIFIED REQUESTS: %0d",tested);
+            $display("PASS ways=%0d latency=%0d stage=%0d requests=%0d hits=%0d misses=%0d cycles=%0d",WAYS,LATENCY,stage,requests,hits,requests-hits,total_cycles);
+        end
         $finish;
+    end
+    initial begin
+        #100000000;
+        fail("global simulation timeout");
     end
 endmodule
