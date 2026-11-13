@@ -139,6 +139,11 @@ module cache_tb;
             end
             if (write_request) expected[addr]=data_in;
             if (ram.bytes[addr] !== expected[addr]) fail("write-through memory mismatch");
+            if (ram.reads-old_reads != !predicted_hit) fail("wrong number of block fetches");
+            if (ram.writes-old_writes != write_request) fail("wrong number of byte writes");
+            // Each block fetch or byte write adds LATENCY+2 handshake cycles.
+            if (cycles != 2+(LATENCY+2)*(!predicted_hit+write_request))
+                fail("unexpected request service time");
             tested=tested+1;
             requests=requests+1;
             if (predicted_hit) begin
@@ -148,12 +153,22 @@ module cache_tb;
             model_block[victim]=block_number;
             last_used[victim]=requests;
             total_cycles=total_cycles+cycles;
+            if (demo) begin
+                $display("%4d  0x%04h   %s  0x%02h  %6d",
+                         requests, addr, cpu_hit ? "HIT " : "MISS", cpu_rdata, cycles);
+            end
+            if (event_file)
+                $fdisplay(event_file,"%0d,%0d,%04h,%02h,%0d,%02h,%0d",requests,write_request,addr,data_in,cpu_hit,write_request ? data_in : cpu_rdata,cycles);
         end
     endtask
 
     initial begin
+        csv_file=0; event_file=0;
+        demo=0;
+        stage=2;
+        scan=$value$plusargs("stage=%d",stage);
         fresh_start;
-        // Baseline checks: a complete block, write hit, write miss, replacement.
+        // Baseline checks with exact service-cycle and memory transaction checks.
         access(0,16'h0000,0,0);
         for (i=0;i<4;i=i+1) access(0,i,0,1);
         for (i=0;i<4;i=i+1) begin
@@ -167,7 +182,8 @@ module cache_tb;
         access(1,16'hfffe,8'h77,1);
         access(0,16'hfffe,0,1);
         check_memory;
-        $display("PASS baseline read/write verification");
+        $display("TOTAL VERIFIED REQUESTS: %0d",tested);
+        $display("PASS ways=%0d latency=%0d cycles=%0d",WAYS,LATENCY,total_cycles);
         $finish;
     end
 endmodule
