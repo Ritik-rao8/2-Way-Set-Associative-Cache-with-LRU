@@ -1,0 +1,618 @@
+$date
+	Mon Nov 16 23:04:58 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1ps
+$end
+$scope module cache_tb $end
+$var wire 1 ! mem_write $end
+$var wire 8 " mem_wdata [7:0] $end
+$var wire 1 # mem_req $end
+$var wire 32 $ mem_rdata [31:0] $end
+$var wire 1 % mem_done $end
+$var wire 16 & mem_addr [15:0] $end
+$var wire 8 ' cpu_rdata [7:0] $end
+$var wire 1 ( cpu_hit $end
+$var wire 1 ) cpu_done $end
+$var wire 1 * cpu_busy $end
+$var parameter 32 + LATENCY $end
+$var parameter 32 , SETS $end
+$var parameter 32 - WAYS $end
+$var reg 1 . clk $end
+$var reg 16 / cpu_addr [15:0] $end
+$var reg 1 0 cpu_req $end
+$var reg 8 1 cpu_wdata [7:0] $end
+$var reg 1 2 cpu_write $end
+$var reg 1024 3 csv_path [1023:0] $end
+$var reg 1 4 demo $end
+$var reg 1024 5 event_path [1023:0] $end
+$var reg 1 6 initialized $end
+$var reg 1 7 memory_reset $end
+$var reg 32 8 random_state [31:0] $end
+$var reg 1 9 reset $end
+$var reg 1024 : trace_path [1023:0] $end
+$var reg 1024 ; wave_path [1023:0] $end
+$var integer 32 < address [31:0] $end
+$var integer 32 = csv_file [31:0] $end
+$var integer 32 > event_file [31:0] $end
+$var integer 32 ? hits [31:0] $end
+$var integer 32 @ i [31:0] $end
+$var integer 32 A j [31:0] $end
+$var integer 32 B op [31:0] $end
+$var integer 32 C requests [31:0] $end
+$var integer 32 D scan [31:0] $end
+$var integer 32 E stage [31:0] $end
+$var integer 32 F tested [31:0] $end
+$var integer 32 G total_cycles [31:0] $end
+$var integer 32 H trace_file [31:0] $end
+$var integer 32 I value [31:0] $end
+$upscope $end
+$scope module cache_tb $end
+$scope module dut $end
+$var wire 1 . clk $end
+$var wire 16 J cpu_addr [15:0] $end
+$var wire 1 0 cpu_req $end
+$var wire 8 K cpu_wdata [7:0] $end
+$var wire 1 2 cpu_write $end
+$var wire 1 L hit $end
+$var wire 1 M hit0 $end
+$var wire 1 N hit1 $end
+$var wire 1 O hit_way $end
+$var wire 1 # mem_req $end
+$var wire 8 P mem_wdata [7:0] $end
+$var wire 1 9 reset $end
+$var wire 3 Q set_index [2:0] $end
+$var wire 11 R request_tag [10:0] $end
+$var wire 1 ! mem_write $end
+$var wire 32 S mem_rdata [31:0] $end
+$var wire 1 % mem_done $end
+$var wire 16 T mem_addr [15:0] $end
+$var wire 32 U hit_block [31:0] $end
+$var wire 32 V filled_block [31:0] $end
+$var wire 1 * cpu_busy $end
+$var wire 2 W byte_offset [1:0] $end
+$var parameter 32 X IDLE $end
+$var parameter 32 Y LOOKUP $end
+$var parameter 32 Z REFILL_REQUEST $end
+$var parameter 32 [ REFILL_WAIT $end
+$var parameter 32 \ RESPONSE $end
+$var parameter 32 ] WRITE_REQUEST $end
+$var parameter 32 ^ WRITE_WAIT $end
+$var reg 1 ) cpu_done $end
+$var reg 1 ( cpu_hit $end
+$var reg 8 _ cpu_rdata [7:0] $end
+$var reg 1 ` fill_way $end
+$var reg 16 a saved_addr [15:0] $end
+$var reg 8 b saved_wdata [7:0] $end
+$var reg 1 c saved_write $end
+$var reg 3 d state [2:0] $end
+$var integer 32 e i [31:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b101 ^
+b100 ]
+b110 \
+b11 [
+b10 Z
+b1 Y
+b0 X
+b10 -
+b1000 ,
+b11 +
+$end
+#0
+$dumpvars
+bx e
+bx d
+xc
+bx b
+bx a
+x`
+bx _
+bx W
+bx V
+bx U
+bx T
+bx S
+bx R
+bx Q
+bx P
+xO
+xN
+xM
+xL
+b0 K
+b0 J
+bx I
+bx H
+bx G
+b0 F
+b10 E
+b0 D
+bx C
+bx B
+bx A
+bx @
+bx ?
+b0 >
+b0 =
+bx <
+b1110010011001010111001101110101011011000111010001110011001011110111011101100001011101100110010101100110011011110111001001101101011100110010111100110010011101110110000101111001010111110110010001100101011011010110111100101110011101100110001101100100 ;
+bx :
+19
+bx 8
+17
+06
+bx 5
+14
+bx 3
+02
+b0 1
+00
+b0 /
+0.
+x*
+x)
+x(
+bx '
+bx &
+x%
+bx $
+x#
+bx "
+x!
+$end
+#5000
+0L
+0O
+0M
+0N
+0#
+b0 Q
+b0 R
+b0 W
+b0 &
+b0 T
+0*
+0!
+b0 V
+0`
+0c
+b0 "
+b0 P
+b0 b
+b0 a
+b0 '
+b0 _
+0(
+0)
+b0 d
+b0 $
+b0 S
+0%
+b1000 e
+1.
+#10000
+0.
+#15000
+b1000 e
+1.
+#20000
+0.
+#25000
+b1000 e
+1.
+#30000
+b10000000000000000 A
+b0 G
+b0 ?
+b0 C
+16
+07
+09
+0.
+#35000
+1.
+#40000
+10
+0.
+#45000
+1*
+b1 d
+1.
+#50000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#55000
+1#
+b10 d
+1.
+#60000
+0.
+#65000
+0#
+b11 d
+1.
+#70000
+0.
+#75000
+1.
+#80000
+0.
+#85000
+1.
+#90000
+0.
+#95000
+b11000000100000000100000000 V
+1%
+b11000000100000000100000000 $
+b11000000100000000100000000 S
+1.
+#100000
+0.
+#105000
+1L
+b11000000100000000100000000 U
+1M
+b110 d
+0%
+1.
+#110000
+0.
+#115000
+0*
+b0 d
+1)
+1.
+#116000
+b111 G
+b1 C
+b1 F
+#120000
+b0 1
+b0 K
+b1000000 /
+b1000000 J
+02
+10
+0.
+#125000
+0L
+b1000000 &
+b1000000 T
+0M
+1*
+b10 R
+b1 d
+b1000000 a
+0)
+1.
+#130000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#135000
+1#
+b10 d
+1`
+1.
+#140000
+0.
+#145000
+0#
+b11 d
+1.
+#150000
+0.
+#155000
+1.
+#160000
+0.
+#165000
+1.
+#170000
+0.
+#175000
+b1000011010000100100000101000000 V
+1%
+b1000011010000100100000101000000 $
+b1000011010000100100000101000000 S
+1.
+#180000
+0.
+#185000
+b1000011010000100100000101000000 U
+1L
+1O
+1N
+b110 d
+b1000000 '
+b1000000 _
+0%
+1.
+#190000
+0.
+#195000
+0*
+b0 d
+1)
+1.
+#196000
+b1110 G
+b10 C
+b10 F
+#200000
+b0 1
+b0 K
+b0 /
+b0 J
+02
+10
+0.
+#205000
+b11000000100000000100000000 U
+0O
+b0 &
+b0 T
+1M
+0N
+1*
+b0 R
+b1 d
+b0 a
+0)
+1.
+#210000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#215000
+b110 d
+b0 '
+b0 _
+1(
+1.
+#220000
+0.
+#225000
+0*
+b0 d
+1)
+1.
+#226000
+b10000 G
+b1 ?
+b11 C
+b11 F
+#230000
+b0 1
+b0 K
+b10000000 /
+b10000000 J
+02
+10
+0.
+#235000
+0L
+b10000000 &
+b10000000 T
+0M
+1*
+b100 R
+b1 d
+b10000000 a
+0)
+1.
+#240000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#245000
+1#
+b10 d
+0(
+1.
+#250000
+0.
+#255000
+0#
+b11 d
+1.
+#260000
+0.
+#265000
+1.
+#270000
+0.
+#275000
+1.
+#280000
+0.
+#285000
+b10000011100000101000000110000000 V
+1%
+b10000011100000101000000110000000 $
+b10000011100000101000000110000000 S
+1.
+#290000
+0.
+#295000
+b10000011100000101000000110000000 U
+1L
+1O
+1N
+0%
+b110 d
+b10000000 '
+b10000000 _
+1.
+#300000
+0.
+#305000
+0*
+b0 d
+1)
+1.
+#306000
+b10111 G
+b100 C
+b100 F
+#310000
+b0 1
+b0 K
+b0 /
+b0 J
+02
+10
+0.
+#315000
+b11000000100000000100000000 U
+0O
+b0 &
+b0 T
+1M
+0N
+1*
+b0 R
+b1 d
+b0 a
+0)
+1.
+#320000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#325000
+b110 d
+b0 '
+b0 _
+1(
+1.
+#330000
+0.
+#335000
+0*
+b0 d
+1)
+1.
+#336000
+b11001 G
+b10 ?
+b101 C
+b101 F
+#340000
+b0 1
+b0 K
+b1000000 /
+b1000000 J
+02
+10
+0.
+#345000
+0L
+b1000000 &
+b1000000 T
+0M
+1*
+b10 R
+b1 d
+b1000000 a
+0)
+1.
+#350000
+12
+b10101100 1
+b10101100 K
+b1101111010101101 /
+b1101111010101101 J
+00
+0.
+#355000
+1#
+b10 d
+0(
+1.
+#360000
+0.
+#365000
+0#
+b11 d
+1.
+#370000
+0.
+#375000
+1.
+#380000
+0.
+#385000
+1.
+#390000
+0.
+#395000
+b1000011010000100100000101000000 V
+1%
+b1000011010000100100000101000000 $
+b1000011010000100100000101000000 S
+1.
+#400000
+0.
+#405000
+b1000011010000100100000101000000 U
+1L
+1O
+1N
+b110 d
+b1000000 '
+b1000000 _
+0%
+1.
+#410000
+0.
+#415000
+0*
+b0 d
+1)
+1.
+#416000
+b100000 G
+b110 C
+b110 F
+#420000
+0.
+#425000
+0)
+1.
+#430000
+0.
+#435000
+1.
+#440000
+0.
