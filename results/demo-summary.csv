@@ -1,0 +1,7 @@
+access_num,address_hex,block_hex,tag_direct,tag_2way,direct_result,direct_cycles,twoway_result,twoway_cycles,twoway_set0_way0,twoway_set0_way1,next_victim
+1,0x0000,0x0000,0,0,MISS,7,MISS,7,0x0000,EMPTY,Way 1
+2,0x0040,0x0040,1,2,MISS,7,MISS,7,0x0000,0x0040,Way 0
+3,0x0000,0x0000,0,0,MISS,7,HIT,2,0x0000,0x0040,Way 1
+4,0x0080,0x0080,2,4,MISS,7,MISS,7,0x0000,0x0080,Way 0
+5,0x0000,0x0000,0,0,MISS,7,HIT,2,0x0000,0x0080,Way 1
+6,0x0040,0x0040,1,2,MISS,7,MISS,7,0x0040,0x0080,Way 0
