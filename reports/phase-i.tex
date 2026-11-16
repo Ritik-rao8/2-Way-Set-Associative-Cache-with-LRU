@@ -37,5 +37,50 @@ ratios and to isolate causes of misses \cite{hill}. We use short, identical
 request sequences to show exactly which address causes each hit, miss,
 or eviction in the prototype.
 
+\section{Proposed Solution}
+The testbench supplies byte reads and writes to one cache at a time. The
+controller saves the request when idle, then compares tags in the selected
+location. A hit requires a matching tag and an asserted valid bit. The two-way
+design compares its two tags in parallel. On a miss, the controller fetches
+the aligned four-byte block from the memory model.
+
+\begin{table}[!t]
+\caption{Cache Geometry and Address Fields}
+\label{tab:geom1}
+\centering
+\begin{tabular}{lcc}
+\toprule
+ & Direct-mapped & Two-way LRU\\
+\midrule
+Sets $\times$ ways & $16\times1$ & $8\times2$\\
+Data capacity & 64 B & 64 B\\
+Block size & 4 B & 4 B\\
+Tag bits & $[15:6]$ & $[15:5]$\\
+Index bits & $[5:2]$ & $[4:2]$\\
+Byte offset bits & $[1:0]$ & $[1:0]$\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Decoding an Address}
+Table~\ref{tab:geom1} defines the 16-bit byte address fields. For example,
+\texttt{0x0043} selects two-way set 0 with tag 2. Its offset is 3, so it
+uses the fourth byte of the block starting at \texttt{0x0040}. The same
+address maps to direct line 0 with tag 1.
+
+\subsection{Filling and Replacing Blocks}
+A two-way miss uses an invalid slot first. When both ways are valid, the
+set's LRU bit points to the way to replace. A hit or fill makes its way
+most recently used, so the controller saves the other way as the next
+victim. One bit suffices because the set holds just two ways.
+
+\subsection{Finishing Reads and Writes}
+A read returns one byte. A write updates only the addressed byte. With
+write-allocate, a write miss first fetches the block. With write-through,
+every write then sends the selected byte to memory and waits for
+acknowledgment. The seven controller states accept the CPU request, check
+tags, issue and wait for a refill, issue and wait for a write, and return
+the response. Read hits proceed from lookup directly to response.
+
 
 \end{document}
