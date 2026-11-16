@@ -1,0 +1,41 @@
+\input{preamble}
+\title{A Two-Way LRU Cache Prototype in Verilog\\
+\large Phase I Project Report}
+\begin{document}
+\maketitle
+
+\begin{abstract}
+We developed a Verilog prototype to show how cache associativity changes
+block placement and replacement. The prototype pairs a direct-mapped baseline
+with a two-way cache that uses least recently used (LRU) replacement.
+Both designs hold 64 bytes in four-byte blocks. A directed test fills both
+ways of one set, reads the older block again, and then requests a third
+block. The two-way controller keeps the block that was just read and evicts
+the other one. A shared testbench checks this behavior, returned bytes,
+and time to complete each access.
+\end{abstract}
+
+\begin{IEEEkeywords}
+Cache memory, Verilog, set associativity, least recently used
+\end{IEEEkeywords}
+
+\section{Introduction}
+A cache retains recently accessed blocks so the CPU can satisfy some
+requests without waiting for main memory. A direct-mapped cache gives a
+block one possible location. Two frequently accessed blocks that share
+that location can displace each other even when other lines are empty.
+The design question for this prototype is whether two slots in a selected
+set retain such blocks at the same total data capacity. The prototype also
+makes the victim selection visible when a third block needs the same set.
+
+\section{Literature Review}
+Smith surveys cache design choices such as placement, replacement, block size,
+and memory update policy \cite{smith}. Placement limits the possible slots
+for a block. Replacement chooses a slot when those locations are occupied.
+Hill and Smith use address traces to study how associativity changes miss
+ratios and to isolate causes of misses \cite{hill}. We use short, identical
+request sequences to show exactly which address causes each hit, miss,
+or eviction in the prototype.
+
+
+\end{document}
