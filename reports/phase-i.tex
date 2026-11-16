@@ -82,5 +82,97 @@ acknowledgment. The seven controller states accept the CPU request, check
 tags, issue and wait for a refill, issue and wait for a write, and return
 the response. Read hits proceed from lookup directly to response.
 
+\section{Prototype Verification}
+Table~\ref{tab:lru} shows the first four requests of the directed demo.
+The third request hits A and makes B the next victim. C then evicts B.
+The testbench follows up by reading A again and then B. A hits and B
+misses, confirming the contents of the set through the normal CPU interface.
+Each block maps to line 0 in direct mapping, where each different block
+overwrites the previous one. Across these six reads, direct mapping
+takes 42 service cycles with zero hits and the two-way cache takes
+32 cycles with two hits.
+
+\begin{table}[!t]
+\caption{Two-Way Set 0 After Each Demo Access}
+\label{tab:lru}
+\centering
+\footnotesize
+\begin{tabular}{lcccl}
+\toprule
+Read address & Result & Way 0 & Way 1 & Next victim\\
+\midrule
+A (\texttt{0000}) & Miss & A & Empty & Empty way\\
+B (\texttt{0040}) & Miss & A & B & A\\
+A (\texttt{0000}) & Hit & A & B & B\\
+C (\texttt{0080}) & Miss & A & C & A\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Reproducing the Demonstration}
+From the project root, \texttt{./run.sh demo} compiles both designs with
+Icarus Verilog, prints each result, and saves a waveform for each cache.
+In \texttt{2way\_demo.vcd}, \texttt{cpu\_req} marks the request
+and \texttt{cpu\_done} marks completion. On a miss, \texttt{mem\_req}
+requests the block and \texttt{mem\_done} acknowledges it. Figure~\ref{fig:wave}
+shows these signals on the third and fourth reads. Counting from the
+accepting clock edge, the hit completes at 225 ns (two cycles) and the
+miss completes at 305 ns (seven cycles). The final two reads then
+confirm the eviction through the CPU interface.
+
+\begin{figure}[!t]
+\centering
+\setlength{\unitlength}{1pt}
+\begin{picture}(236,116)
+\scriptsize
+\put(85,105){\makebox(0,0){A hits}}
+\put(163,105){\makebox(0,0){C misses}}
+\put(5,88){\texttt{cpu\_req}}
+\put(5,69){\texttt{mem\_req}}
+\put(5,50){\texttt{mem\_done}}
+\put(5,31){\texttt{cpu\_done}}
+\thicklines
+\put(63,93){\line(1,0){15}}
+\put(78,86){\line(0,1){7}}
+\put(78,86){\line(1,0){30}}
+\put(108,86){\line(0,1){7}}
+\put(108,93){\line(1,0){15}}
+\put(123,86){\line(0,1){7}}
+\put(123,86){\line(1,0){105}}
+\put(63,67){\line(1,0){67.5}}
+\put(130.5,67){\line(0,1){7}}
+\put(130.5,74){\line(1,0){15}}
+\put(145.5,67){\line(0,1){7}}
+\put(145.5,67){\line(1,0){82.5}}
+\put(63,48){\line(1,0){127.5}}
+\put(190.5,48){\line(0,1){7}}
+\put(190.5,55){\line(1,0){15}}
+\put(205.5,48){\line(0,1){7}}
+\put(205.5,48){\line(1,0){22.5}}
+\put(63,36){\line(1,0){7.5}}
+\put(70.5,29){\line(0,1){7}}
+\put(70.5,29){\line(1,0){30}}
+\put(100.5,29){\line(0,1){7}}
+\put(100.5,36){\line(1,0){15}}
+\put(115.5,29){\line(0,1){7}}
+\put(115.5,29){\line(1,0){105}}
+\put(220.5,29){\line(0,1){7}}
+\put(220.5,36){\line(1,0){7.5}}
+\thinlines
+\put(63,17){\line(1,0){165}}
+\multiput(63,14)(30,0){6}{\line(0,1){3}}
+\put(63,7){\makebox(0,0){200}}
+\put(93,7){\makebox(0,0){220}}
+\put(123,7){\makebox(0,0){240}}
+\put(153,7){\makebox(0,0){260}}
+\put(183,7){\makebox(0,0){280}}
+\put(213,7){\makebox(0,0){300}}
+\put(228,7){\makebox(0,0){ns}}
+\end{picture}
+\caption{Signals from the two-way demo for the second read of A
+and the first read of C. The testbench clock period is 10 ns.}
+\label{fig:wave}
+\end{figure}
+
 
 \end{document}
