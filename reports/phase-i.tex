@@ -174,5 +174,28 @@ and the first read of C. The testbench clock period is 10 ns.}
 \label{fig:wave}
 \end{figure}
 
+\newpage
+\section{Phase II Evaluation Plan}
+The next phase compares hit rate and total service cycles across seven
+workloads, including two-block conflicts, three blocks in one set,
+sequential and repeated reads, capacity overflow, and mixed reads and
+writes. Both designs use the same initial memory, empty cache state,
+and memory delay for every run. Generic synthesis compares their
+register and logic cell counts.
 
+\section{Individual Contributions}
+\begin{itemize}
+\item \textbf{Ritik} developed the two-way Verilog controller and its LRU
+replacement logic.
+\item \textbf{Aman} developed the direct-mapped baseline and documented
+its address mapping.
+\item \textbf{Dipanshu Chaudhary} developed the shared testbench and memory model
+and verified the prototype using the demo waveforms.
+\item \textbf{Sarabjit Singh} leads the prototype video and assembles the
+Phase I report.
+\item \textbf{Ansh Tomar} compared hit counts and service cycles
+for the six-read prototype demo.
+\end{itemize}
+
+\input{references}
 \end{document}
