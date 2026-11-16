@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Step through identical memory requests in two Verilog cache designs with an interactive cache model.">
+  <title>Cache Explorer</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="style.css">
+  <script src="data.js" defer></script>
+  <script src="model.js" defer></script>
+  <script src="script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top"><span class="brand-icon" aria-hidden="true"></span>Cache Explorer</a>
+      <nav aria-label="Page sections">
+        <a href="#simulator">Simulator</a>
+        <a href="#measurements">RTL results</a>
+      </nav>
+    </div>
+  </header>
+
+  <main id="top" class="wrap">
+    <section class="intro" aria-labelledby="title">
+      <div>
+        <h1 id="title">One slot. Two slots. <br>See the difference.</h1>
+        <p>Follow a block from memory into the cache. Then ask for it again.</p>
+      </div>
+      <div class="intro-diagram" aria-label="The CPU checks the cache before fetching from memory">
+        <span>CPU</span><b aria-hidden="true">→</b><span class="mini-cache">Cache</span><b aria-hidden="true">→</b><span>Memory</span>
+      </div>
+    </section>
+
+    <section id="simulator" class="simulator" aria-labelledby="sim-title">
+      <div class="lessons" role="group" aria-label="Choose a visual lesson">
+        <button type="button" data-lesson="conflict_demo" aria-pressed="true">Two blocks, one slot</button>
+        <button type="button" data-lesson="lru_demo" aria-pressed="false">Which block leaves?</button>
+        <button type="button" data-lesson="locality_demo" aria-pressed="false">Fetch the neighbours</button>
+      </div>
+      <div class="sim-toolbar">
+        <div class="select-group">
+          <h2 id="sim-title">Two blocks, one slot</h2>
+          <details class="more-traces"><summary>More examples &amp; workloads</summary>
+          <label for="scenario">Choose a scenario</label>
+          <select id="scenario">
+            <optgroup label="Short demos">
+              <option value="lru_demo">How LRU chooses what to evict (6)</option>
+              <option value="conflict_demo">Two addresses collide (4)</option>
+              <option value="locality_demo">Fetch four neighbouring bytes (4)</option>
+              <option value="write_demo">Write a byte and read it back (3)</option>
+            </optgroup>
+            <optgroup label="Full Verilog workloads">
+              <option value="conflict">Alternating conflict (16)</option>
+              <option value="repeated">Repeated address (16)</option>
+              <option value="sequential">Sequential bytes (128)</option>
+              <option value="lru">LRU replacement (7)</option>
+              <option value="capacity">Capacity overflow (64)</option>
+              <option value="three_blocks">Three colliding blocks (24)</option>
+              <option value="mixed">Mixed reads and writes (196)</option>
+            </optgroup>
+            <option value="custom">My own addresses</option>
+          </select>
+          </details>
+        </div>
+        <div class="controls" aria-label="Simulation controls">
+          <button id="reset" type="button">Reset</button>
+          <button id="previous" type="button">Previous</button>
+          <button id="play" type="button" aria-pressed="false">Play</button>
+          <button id="next" class="primary" type="button">Next access <span aria-hidden="true">→</span></button>
+        </div>
+      </div>
+      <div class="queue-section">
+        <div class="queue-heading"><strong>Request sequence</strong><span id="progress" class="mono"></span></div>
+        <div id="queue" class="queue" role="group" aria-label="Jump to a request"></div>
+        <div id="seek-row" class="seek-row" hidden>
+          <label for="seek">Jump to request</label>
+          <input id="seek" type="range" min="0" value="0" step="1">
+        </div>
+      </div>
+      <div class="workspace">
+        <div class="explanation">
+          <div class="request">
+            <p id="request-label" class="request-label"></p>
+            <p id="request-address" class="request-address mono"></p>
+          </div>
+          <p id="narration" role="status" aria-atomic="true"></p>
+        </div>
+        <div class="visual-key"><span class="hit-key">HIT · already in cache</span><span class="miss-key">MISS · fetch from memory</span></div>
+        <div id="caches" class="cache-grid"></div>
+        <section id="lesson-result" class="lesson-result" aria-label="Lesson results" hidden></section>
+        <p class="geometry">Both caches hold 64 bytes in total. Each slot holds one 4-byte block.</p>
+        <details id="details" class="drawer">
+          <summary>Address bits and controller cycles</summary>
+          <div id="details-content" class="details-grid"></div>
+        </details>
+        <details id="all-lines" class="drawer">
+          <summary>Show all cache lines</summary>
+          <div id="all-lines-content" class="details-grid"></div>
+        </details>
+      </div>
+      <details id="custom" class="custom">
+        <summary>Build your own trace</summary>
+        <form id="custom-form">
+          <label>Hex address <input id="address" value="0040" maxlength="6" autocomplete="off" spellcheck="false" required></label>
+          <label>Operation <select id="operation"><option value="read">Read</option><option value="write">Write</option></select></label>
+          <label>Hex byte <input id="byte" value="2A" maxlength="4" autocomplete="off" spellcheck="false" disabled required></label>
+          <button type="submit">Add request</button>
+          <button id="clear-custom" type="button">Clear custom trace</button>
+        </form>
+        <p id="form-error" role="alert"></p>
+      </details>
+    </section>
+
+    <details id="measurements" class="measurements"><summary>Explore the measured Verilog results</summary>
+      <div class="measure-heading">
+        <div>
+          <h2 id="measure-title">Measured in Verilog</h2>
+          <p>Both caches start empty. The same trace runs on each design at three cycles of memory delay.</p>
+        </div>
+        <button type="button" id="download">Download comparison CSV</button>
+      </div>
+      <div class="table-scroll" tabindex="0" role="region" aria-label="Measured RTL hit rates and total service cycles">
+        <table>
+          <thead><tr><th scope="col">Workload</th><th scope="col">Direct-mapped</th><th scope="col">Two-way LRU</th></tr></thead>
+          <tbody id="results"></tbody>
+        </table>
+      </div>
+    </details>
+    <footer>The simulator uses a JavaScript model checked against 902 Verilog responses. Both designs use write-through and write-allocate.</footer>
+    <noscript><p>Enable JavaScript to run the interactive simulator.</p></noscript>
+  </main>
+</body>
+</html>
