@@ -28,8 +28,8 @@ All 5 group members have contributed meaningfully to the conception, design, ver
 | :--- | :--- | :--- |
 | **Ritik** | `Ritik-rao8` | Developed the two-way Verilog cache controller (`cache_2way.v`) and the 1-bit LRU replacement logic per set. |
 | **Aman** | `Aman739-code` | Developed the direct-mapped baseline controller (`cache_direct.v`) and documented address bit decoding. |
-| **Dipanshu Chaudhary** | `Deepanshu-Nst` | Developed the shared testbench (`cache_tb.v`), memory model, and verified signal timing across clock cycles. |
-| **Sarabjit Singh** | `SarabjeetSingh1508` | Assembled the IEEE Phase I project report, maintained repository documentation, and coordinated the prototype demo video. |
+| **Deepanshu Chaudhary** | `Deepanshu-Nst` | Developed the shared testbench (`cache_tb.v`), memory model, and verified signal timing across clock cycles. |
+| **Sarabjeet Singh** | `SarabjeetSingh1508` | Assembled the IEEE Phase I project report, maintained repository documentation, and coordinated the prototype demo video. |
 | **Ansh Tomar** | `anshtomarrr` | Analyzed prototype metrics, calculated hit counts/service cycles for the 6-read sequence, and verified waveform timing. |
 
 ---

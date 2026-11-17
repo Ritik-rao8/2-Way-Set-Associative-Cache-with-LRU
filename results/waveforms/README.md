@@ -1,6 +1,6 @@
 # Simulation Waveform Inspection Guide
 
-**Author**: Dipanshu Chaudhary  
+**Author**: Deepanshu Chaudhary  
 **Directory Scope**: Phase I Prototype VCD Captures
 
 This folder contains Value Change Dump (`.vcd`) waveform captures generated from the Phase I Verilog prototype simulation.
