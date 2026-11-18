@@ -59,7 +59,7 @@ module cache_2way (
         end
     endfunction
 
-    // On a write miss, merge the CPU byte into the block we just fetched.
+    // Phase II: on a write miss the full aligned block is fetched first; the CPU write byte is then merged before install.
     wire [31:0] filled_block = saved_write
         ? replace_byte(mem_rdata, byte_offset, saved_wdata) : mem_rdata;
 
