@@ -26,3 +26,13 @@ memory transactions: block fetch and byte write. These are simulation cycles, no
 
 Every event, hit count, returned byte, and cycle total was also checked by a separate
 Python model using lists ordered by recency. Values above come from Verilog simulation.
+
+---
+
+## Python Model Verification
+
+All 14 trace runs (7 workloads x 2 cache designs) were independently checked against
+the Python reference model in verilog/sim/summarize.py. Every returned byte, hit/miss
+decision, and service-cycle count matched with zero discrepancies.
+
+Run ./run.sh compare to reproduce all measurements.

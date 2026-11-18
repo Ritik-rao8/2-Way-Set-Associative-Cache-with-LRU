@@ -58,3 +58,12 @@ Inspect the DUT signal `saved_addr` to follow the address while it is busy.
 Read 3 completes in two cycles. Read 4 completes in seven cycles, with
 `mem_req` and `mem_done` visible during the refill.
 See the waveform figure in the [Phase I report](../reports/phase-i.pdf).
+
+## Phase II: Netlist Regression
+
+After Yosys synthesis, each gate-level netlist was tested through the full
+3,259-request verification suite at latency 3. Both netlists produced identical
+hit/miss decisions and service-cycle counts as the RTL, confirming functional
+equivalence between synthesised netlist and source Verilog.
+
+Run ./run.sh synth to reproduce the synthesis and netlist tests.

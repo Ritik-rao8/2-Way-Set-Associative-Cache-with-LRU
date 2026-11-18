@@ -119,3 +119,18 @@ pipeline. Those additions are outside the supplied project objective. Reset
 can cancel a transaction only when cache and memory are reset together; a
 cache-only invalidation is supported while idle. Behavioral simulation memory
 reinitializes its contents on joint reset.
+
+## Phase II: Hardware Synthesis
+
+Both controllers were synthesised through the Yosys generic-cell flow (./run.sh synth).
+Each generated netlist was then verified through the full 3,259-request regression at
+latency 3 to confirm functional equivalence with the RTL source.
+
+| Controller    | Generic cells |
+|:--------------|:-------------:|
+| Direct-mapped | 1,782         |
+| Two-way LRU   | 1,920         |
+
+The 138-cell overhead (7.7%) covers the second set of tag and data arrays, the eight
+LRU bits, and the fill-way selector. No latches were inferred; all storage maps to
+synchronous registers.

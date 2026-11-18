@@ -1,0 +1,65 @@
+{
+   "creator": "Yosys 0.70+post (git sha1 0c11ea098be065e585a90a06e7b7da49936cf231, Release, AppleClang clang++ 21.0.0.21000334)",
+   "invocation": "stat -json ",
+   "modules": {
+      "\\cache_2way": {
+         "num_wires":         1152,
+         "num_wire_bits":     2216,
+         "num_pub_wires":     88,
+         "num_pub_wire_bits": 933,
+         "num_ports":         16,
+         "num_port_bits":     98,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         1920,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "$_ANDNOT_": 34,
+            "$_AND_": 126,
+            "$_DFFE_PP_": 688,
+            "$_DFF_P_": 16,
+            "$_MUX_": 820,
+            "$_NAND_": 96,
+            "$_NOR_": 16,
+            "$_NOT_": 9,
+            "$_ORNOT_": 4,
+            "$_OR_": 39,
+            "$_SDFFCE_PN0P_": 8,
+            "$_SDFFE_PP0P_": 38,
+            "$_SDFF_PP0_": 4,
+            "$_XOR_": 22
+         }
+      }
+   },
+      "design": {
+         "num_wires":         1152,
+         "num_wire_bits":     2216,
+         "num_pub_wires":     88,
+         "num_pub_wire_bits": 933,
+         "num_ports":         16,
+         "num_port_bits":     98,
+         "num_memories":      0,
+         "num_memory_bits":   0,
+         "num_processes":     0,
+         "num_cells":         1920,
+         "num_submodules":       0,
+         "num_cells_by_type": {
+            "$_ANDNOT_": 34,
+            "$_AND_": 126,
+            "$_DFFE_PP_": 688,
+            "$_DFF_P_": 16,
+            "$_MUX_": 820,
+            "$_NAND_": 96,
+            "$_NOR_": 16,
+            "$_NOT_": 9,
+            "$_ORNOT_": 4,
+            "$_OR_": 39,
+            "$_SDFFCE_PN0P_": 8,
+            "$_SDFFE_PP0P_": 38,
+            "$_SDFF_PP0_": 4,
+            "$_XOR_": 22
+         }
+      }
+}
+
