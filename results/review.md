@@ -34,3 +34,13 @@ are generated in `build/`. This directory holds [the comparison
 summary](comparison.md), `runs/` with per-request CSVs, `synthesis/` with
 generic cell reports, and `waveforms/` with the demo captures.
 See the [technical report](../docs/technical-report.md) for interpretation.
+
+## Phase II Coverage
+
+Seven shared traces (alternating conflict, repeated, sequential, LRU replacement,
+capacity overflow, three colliding blocks, and mixed reads/writes) run on both
+designs. Each trace starts with an empty cache and identically initialised memory.
+All 14 runs (7 traces x 2 caches) match the independent Python reference model on
+returned bytes, hit/miss decisions, and service cycle counts.
+
+Run ./run.sh compare to reproduce all measurements.

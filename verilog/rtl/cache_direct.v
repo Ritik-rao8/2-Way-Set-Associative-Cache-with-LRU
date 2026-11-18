@@ -79,7 +79,7 @@ module cache_direct (
                             data[line_index] <= replace_byte(data[line_index], byte_offset, saved_wdata);
                             state <= WRITE_REQUEST;
                         end else begin
-                            // +: selects eight consecutive bits starting at offset*8.
+                            // +: bit-slice operator; offset*8 is the bit start and 8 is the width.
                             cpu_rdata <= data[line_index][byte_offset*8 +: 8];
                             state <= RESPONSE;
                         end
@@ -106,7 +106,7 @@ module cache_direct (
                     cpu_done <= 1;
                     state <= IDLE;
                 end
-                default: state <= IDLE;
+                default: state <= IDLE; // Also covers mid-refill reset safely.
             endcase
         end
     end
