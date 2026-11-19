@@ -25,3 +25,16 @@ bibtex phase-i
 pdflatex phase-i.tex
 pdflatex phase-i.tex
 ```
+
+---
+
+## Phase II Report
+
+- **Final Deliverable**: [`phase-ii.pdf`](phase-ii.pdf) — Complete IEEE report covering Results and Discussion, Hardware Synthesis, Conclusion, and Individual Contributions.
+- **Source**: `phase-ii.tex` (IEEEtran format).
+
+To recompile:
+
+```bash
+cd reports
+tectonic phase-ii.tex
