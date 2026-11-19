@@ -30,3 +30,9 @@ available in expandable sections.
 
 After changing hardware or a trace, run `./run.sh compare` and then
 `./run.sh web-test` from the project root.
+
+## Phase II Updates
+
+Two additional interactive lessons added in Phase II:
+- **Which block leaves?** — step through a full-set eviction to see which way the LRU bit selects as the victim.
+- **Fetch the neighbours** — observe how a 4-byte block fill brings adjacent bytes into the cache with one memory request.

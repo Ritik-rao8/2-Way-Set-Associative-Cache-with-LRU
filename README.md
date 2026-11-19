@@ -134,9 +134,9 @@ An optional interactive simulator is available in `web/`:
 
 ---
 
-## Upcoming Phase II Scope
+## Phase II Deliverables
 
-The following milestones are planned for **Phase II (Final Evaluation - 70% weightage)**:
+All Phase II milestones have been completed for the **Final Evaluation (70% weightage)**:
 1. **Trace-Driven Workload Simulation**: Comprehensive evaluation across 7 distinct workload patterns (spatial locality, alternating conflicts, cyclic overflow, capacity stress, and mixed read/write workloads).
 2. **Hardware Synthesis**: Gate-level cell count and area estimation using Yosys open-source synthesis suite.
 3. **Final IEEE Project Report**: Expanded report including Results & Discussion, Synthesis trade-offs, and Conclusion.
