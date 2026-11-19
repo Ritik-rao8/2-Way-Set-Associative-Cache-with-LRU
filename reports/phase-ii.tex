@@ -160,5 +160,23 @@ reads and byte writes. The cycle counts apply to these controllers
 and the stated memory model. The experiment does not model a processor
 pipeline or a physical memory bus.
 
+\section{Conclusion}
+At equal capacity, two-way LRU can retain two blocks that displace each
+other in a direct-mapped line. With fewer sets, it can also group three
+active blocks into a set with room for two. The trace measurements show
+both effects and quantify their service-cycle cost under the same memory
+delay. From the project root, run \texttt{./run.sh compare} to
+reproduce the workload measurements and \texttt{./run.sh synth} to
+repeat the synthesis and netlist checks.
 
+\section{Individual Contributions}
+\begin{itemize}
+\item \textbf{Ritik} developed the two-way Verilog controller, its LRU replacement logic, and the interactive Cache Explorer visualiser.
+\item \textbf{Aman} developed the direct-mapped baseline controller and documented address bit decoding.
+\item \textbf{Deepanshu Chaudhary} developed the shared testbench, memory model, and ran the full verification regression across all latencies and workloads.
+\item \textbf{Ansh Tomar} ran the seven workload traces, performed Yosys synthesis, and verified all 14 runs against the Python reference model.
+\item \textbf{Sarabjeet Singh} assembled both IEEE project reports and coordinated the prototype demonstration video.
+\end{itemize}
+
+\input{references}
 \end{document}
